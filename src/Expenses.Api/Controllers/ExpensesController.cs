@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
+
 using Expenses.Api.Dtos;
 using Expenses.Core.Entites;
+using Expenses.Core.Interfaces;
 
 namespace Expenses.Api.Controllers;
 
@@ -9,40 +11,46 @@ namespace Expenses.Api.Controllers;
 [Route("[controller]")]
 public class ExpensesController : ControllerBase
 {
-    [HttpGet]
-    public async Task<ActionResult<object>> Get()
+    private readonly IExpensesMongoRepository _expensesMongoRepository;
+    public ExpensesController(IExpensesMongoRepository expensesMongoRepository)
     {
-        return new { id = 1, expense = "Internet Bill" };
+        _expensesMongoRepository = expensesMongoRepository;
+    }
+
+    [HttpGet("id:int")]
+    public async Task<ActionResult<ExpenseDto>> Get(int id)
+    {
+        var expense = await _expensesMongoRepository.Get(id);
+        return new ExpenseDto()
+        {
+            Name = expense.Name,
+            Price = expense.Price
+        };
     }
 
     [HttpGet("expenses-all")]
-    public async Task<ActionResult<IEnumerable<object>>> GetAll()
+    public async Task<ActionResult<IEnumerable<ExpenseDto>>> GetAll()
     {
-        var expense = new Expense("Car", 39.0M);
-        var isValid = expense.IsValid();
-
-        return new List<object>
-        {
-            new { id = 1, expense = "Internet Bill" },
-            new { id = 2, expense = "Car" },
-            new { expense, isValid}
-        };
+        return Ok(await _expensesMongoRepository.GetAll());
     }
 
     [HttpPost]
     public async Task<ActionResult<ExpenseDto>> Post(ExpenseInputDto expenseInputDto)
     {
-        var expense = new ExpenseDto()
+        return await Task.FromResult(new ExpenseDto()
         {
             Name = expenseInputDto.Name,
             Price = expenseInputDto.Price
-        };
-        return expense;
+        });
     }
 
     [HttpPut]
     public async Task<ActionResult<ExpenseDto>> Put(ExpenseDto expenseDto)
     {
-
+        return await Task.FromResult(new ExpenseDto()
+        {
+            Name = expenseDto.Name,
+            Price = expenseDto.Price
+        });
     }
 }
