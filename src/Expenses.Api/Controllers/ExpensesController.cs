@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Collections;
 
-using Expenses.Api.Dtos;
-using Expenses.Core.Entites;
+using Expenses.Core.Dtos;
 using Expenses.Core.Interfaces;
 
 namespace Expenses.Api.Controllers;
@@ -11,46 +9,37 @@ namespace Expenses.Api.Controllers;
 [Route("[controller]")]
 public class ExpensesController : ControllerBase
 {
-    private readonly IExpensesMongoRepository _expensesMongoRepository;
-    public ExpensesController(IExpensesMongoRepository expensesMongoRepository)
+    private readonly IExpensesService _expensesService;
+    public ExpensesController(IExpensesService expensesService)
     {
-        _expensesMongoRepository = expensesMongoRepository;
+        _expensesService = expensesService;
     }
 
-    [HttpGet("id:int")]
-    public async Task<ActionResult<ExpenseDto>> Get(int id)
+    [HttpGet("{id:length(24)}")]
+    public async Task<ActionResult<ExpenseDto?>> Get(string id)
     {
-        var expense = await _expensesMongoRepository.Get(id);
-        return new ExpenseDto()
-        {
-            Name = expense.Name,
-            Price = expense.Price
-        };
+        return await _expensesService.GetAsync(id);
     }
 
     [HttpGet("expenses-all")]
     public async Task<ActionResult<IEnumerable<ExpenseDto>>> GetAll()
     {
-        return Ok(await _expensesMongoRepository.GetAll());
+        // return Ok(await _expensesMongoRepository.GetAll());
+        return Ok();
     }
 
     [HttpPost]
-    public async Task<ActionResult<ExpenseDto>> Post(ExpenseInputDto expenseInputDto)
+    public async Task<ActionResult<ExpenseDto>> Post(ExpenseDto expenseDto)
     {
-        return await Task.FromResult(new ExpenseDto()
-        {
-            Name = expenseInputDto.Name,
-            Price = expenseInputDto.Price
-        });
+        await _expensesService.InsertAsync(expenseDto);
+        return Ok();
     }
 
-    [HttpPut]
-    public async Task<ActionResult<ExpenseDto>> Put(ExpenseDto expenseDto)
+    [HttpPut("{id:length(24)}")]
+    public async Task<IActionResult> Put(string id, ExpenseDto expenseDto)
     {
-        return await Task.FromResult(new ExpenseDto()
-        {
-            Name = expenseDto.Name,
-            Price = expenseDto.Price
-        });
+        await _expensesService.UpdateAsync(id, expenseDto);
+
+        return NoContent();
     }
 }

@@ -5,8 +5,8 @@ namespace Expenses.Core.Interfaces;
 
 public interface IExpensesMongoRepository
 {
-    Task<Expense> Get(int id);
-    Task<IEnumerable<Expense>> GetAll();
-    Task<Expense> Insert(Expense expense);
-    Task<Expense> Update(Expense expense);
+    Task<Expense?> GetAsync(string id);
+    Task<IEnumerable<Expense?>> GetAsync();
+    Task InsertAsync(Expense expense);
+    Task UpdateAsync(string id, Expense updatedExpense);
 }
