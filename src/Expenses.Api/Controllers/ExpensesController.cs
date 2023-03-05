@@ -18,7 +18,7 @@ public class ExpensesController : ControllerBase
     [HttpGet("{id:length(24)}")]
     public async Task<ActionResult<ExpenseDto?>> Get(string id)
     {
-        return await _expensesService.GetAsync(id);
+        return Ok(await _expensesService.GetAsync(id));
     }
 
     [HttpGet("expenses-all")]
